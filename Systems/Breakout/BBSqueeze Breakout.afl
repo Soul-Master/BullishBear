@@ -1,8 +1,8 @@
 #include <Header.afl>
 
 // Variables
-periods = Optimize("periods", 10, 10, 200, 10);
-bbWidth = Optimize("bbWidth", 5, 5, 15, 1);
+periods = Optimize("periods", 10, 10, 90, 10);
+bbWidth = Optimize("bbWidth", 5, 1, 15, 1);
 sellPercent = Optimize("sellPercent", 5, 0, 70, 10);
 
 // Calculation
