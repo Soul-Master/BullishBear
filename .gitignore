@@ -1,0 +1,19 @@
+/Systems/_UnverifiedSystem
+/Report/Performance.xlsx
+/Report/Summary.xlsx
+/Signals/BuyRange=5.txt
+/Signals/Temp/BoonC-PeakTrough-1.1.afl
+/Signals/Trend/ema-golden-cross.afl
+/Signals/Trend/ema-rainbow3.afl
+/Signals/Trend/ema.afl
+/Systems/Breakout/HigherHigh.afl
+/Systems/Breakout/Simple Peak & Trough.todo.afl
+/_CustomBacktesting/CustomMetric.afl
+/_CustomBacktesting/DynamicPortfolioSizing.afl
+/_CustomBacktesting/RotationalTrading_RankingSignals.afl
+/Charts/HH HL LH LL.afl
+/Charts/Zig Zag Indicator with Valid Entry and Exit Points.afl
+/DollarAverage.afl
+/DollarAverageIndex.afl
+/Explore.afl
+/OpenPositive.afl
