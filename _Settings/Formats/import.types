@@ -1,0 +1,3 @@
+Default ASCII (*.*)|*.*|default.format
+Metastock ASCII (*.txt)|*.txt|metastock.format
+Metastock ASCII (*.csv)|*.csv|csv.format

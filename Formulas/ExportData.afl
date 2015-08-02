@@ -1,0 +1,36 @@
+// open file for writing
+// file name depends on currently processed ticker
+fh = fopen( "I:\\SET\\" + Name() + ".csv", "w" );
+
+// proceed if file handle is correct
+if ( fh )
+{
+    dt = DateTime(); 
+	yy = Year();
+	mm = Month();
+	dd = Day();
+
+    // write header line
+    fputs( "<TICKER>,<DTYYYYMMDD>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n", fh );
+
+    // iterate through all the bars
+
+    for ( i = 0; i < BarCount; i++ )
+    {
+		cDate = StrFormat( "%4.f%02.f%02.f",yy[i],mm[i],dd[i] );
+        // write ticker name
+        fputs( Name() + "," , fh );
+
+        // write date/time information
+        fputs( cDate + ",", fh );
+
+        //write quotations and go to the next line
+        qs = StrFormat( "%g,%g,%g,%g,", O[ i ], H[ i ], L[ i ], C[ i ]) + WriteVal(V[ i ], 1.0, False) + "\n";
+        fputs( qs, fh );
+    }
+    // close file handle
+    fclose( fh );
+}
+ 
+// line required by SCAN option
+Buy = 0;

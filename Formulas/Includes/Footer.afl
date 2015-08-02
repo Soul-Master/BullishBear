@@ -1,0 +1,9 @@
+// Set slippage 25%
+BuyPrice = Open + ( High - Open ) / 4;
+SellPrice = Open + ( Open - Low ) / 4;
+
+// Removes excessive signal
+Buy = ExRem(Buy,Sell);
+Sell = ExRem(Sell,Buy);
+Short = ExRem(Short,Cover);
+Cover = ExRem(Cover,Short);

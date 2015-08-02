@@ -1,0 +1,84 @@
+SetCustomBacktestProc("");
+benchmarkSymbol = "SET";
+
+if( Status( "action" ) == actionPortfolio )
+{
+	bo = GetBacktesterObject();
+	bo.PreProcess();
+	
+	TotalTrade = 0;
+	BenchmarkPrice = Foreign(benchmarkSymbol, "C");
+	
+	for( bar=0; bar < BarCount-1; bar++)
+	{
+		bo.ProcessTradeSignals(bar);
+		
+		for( sig = bo.GetFirstSignal(bar); sig; sig = bo.GetNextSignal(bar) ) 
+		{ 
+			if( sig.IsEntry() ) 
+			{ 
+				TotalTrade++;
+			}
+        }
+	}
+	
+	TotalRelativePerformance = 0;
+	TotalNormalizedRelativePerformance = 0;
+	
+	// Iterate through closed trades
+	for( trade = bo.GetFirstTrade(); trade; trade = bo.GetNextTrade() )
+	{		
+		// Calculate foreign performance		
+		BenchmarkStart = Lookup(BenchmarkPrice, trade.EntryDateTime, -1);	
+		BenchmarkEnd = Lookup(BenchmarkPrice, trade.ExitDateTime, -1);	
+		BenchmarkChangePct = (BenchmarkEnd - BenchmarkStart) * 100.0 / BenchmarkStart;
+	
+		// Calculate relative performance
+		RelativePerformance = trade.GetPercentProfit() - BenchmarkChangePct;
+		TotalRelativePerformance += RelativePerformance;
+		trade.AddCustomMetric("Relative %", RelativePerformance);
+		
+		// Calculate normalized relative performance
+		if(RelativePerformance < 0)
+		{
+			NormalizedRelativePerformance = -(100*(100/(100+RelativePerformance))-100);
+			TotalNormalizedRelativePerformance += NormalizedRelativePerformance;
+			trade.AddCustomMetric("Normalized Relative %", NormalizedRelativePerformance);
+		}
+	}
+		
+	// Iterate through open trades
+	for (trade = bo.GetFirstOpenPos(); trade; trade = bo.GetNextOpenPos())
+	{
+		// Calculate foreign performance		
+		BenchmarkStart = Lookup(BenchmarkPrice, trade.EntryDateTime, -1);	
+		BenchmarkEnd = BenchmarkPrice[BarCount - 1];	
+		BenchmarkChangePct = (BenchmarkEnd - BenchmarkStart) * 100.0 / BenchmarkStart;		
+		
+		// Calculate symbol price
+		SymbolPrice = Foreign(trade.Symbol, "C");
+		ExitPrice = SymbolPrice[BarCount - 1];
+		SymbolChangePct = (ExitPrice - trade.EntryPrice) * 100.0 / trade.EntryPrice;
+		
+		// Calculate relative performance
+		RelativePerformance = SymbolChangePct - BenchmarkChangePct;
+		TotalRelativePerformance += RelativePerformance;
+		trade.AddCustomMetric("Relative %", BenchmarkChangePct);
+		
+		// Calculate normalized relative performance
+		if(RelativePerformance < 0)
+		{
+			NormalizedRelativePerformance = -(100*(100/(100+RelativePerformance))-100);
+			TotalNormalizedRelativePerformance += NormalizedRelativePerformance;
+			trade.AddCustomMetric("Normalized Relative %", NormalizedRelativePerformance);
+		}
+	}
+	
+	AvgRelativePerformance = TotalRelativePerformance / TotalTrade;	
+	bo.AddCustomMetric( "Avg. Relative %", AvgRelativePerformance );
+	
+	AvgNormalizedRelativePerformance = TotalNormalizedRelativePerformance / TotalTrade;	
+	bo.AddCustomMetric( "Avg. Normalized Relative %", AvgNormalizedRelativePerformance );
+	
+	bo.PostProcess();
+}

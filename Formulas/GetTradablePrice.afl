@@ -1,0 +1,12 @@
+// Unverified
+function GetTradablePrice( price )
+{
+    return IIf(price >= 400, IIf(price % 2 > 0, price + 2 - (price % 2), price), 
+		IIf(price >= 200, IIf(price % 1 > 0, price + 1 - (price % 1), price),
+		IIf(price >= 100, IIf(price % 0.5 > 0, price + 0.5 - (price % 0.5), price),
+		IIf(price >= 25, IIf(price % 0.25 > 0, price + 0.25 - (price % 0.25), price),
+		IIf(price >= 10, IIf(price % 0.1 > 0, price + 0.1 - (price % 0.1), price),
+		IIf(price >= 5, IIf(price % 0.05 > 0, price + 0.05 - (price % 0.05), price),
+		IIf(price >= 2, IIf(price % 0.02 > 0, price + 0.02 - (price % 0.02), price),
+		IIf(price < 2, IIf(price % 0.01 > 0, price + 0.01 - (price % 0.01), price), price))))))));
+};
