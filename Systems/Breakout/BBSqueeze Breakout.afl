@@ -1,0 +1,16 @@
+#include <Header.afl>
+
+// Variables
+periods = Optimize("periods", 10, 10, 200, 10);
+bbWidth = Optimize("bbWidth", 5, 5, 15, 1);
+
+// Calculation
+topBand = BBandTop(Price, periods, 2);
+bottomBand = BBandBot(Price, periods, 2);
+bandWidth = topBand - bottomBand;
+
+// Signal
+Buy = Cross( Price, topBand) && (bandWidth * 100.00/bottomBand) <= bbWidth;
+Sell = Cross(Price, MA(Price, periods));
+
+#include <Footer.afl>
