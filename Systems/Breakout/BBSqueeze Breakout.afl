@@ -3,14 +3,16 @@
 // Variables
 periods = Optimize("periods", 10, 10, 200, 10);
 bbWidth = Optimize("bbWidth", 5, 5, 15, 1);
+sellPercent = Optimize("sellPercent", 5, 0, 70, 10);
 
 // Calculation
-topBand = BBandTop(Price, periods, 2);
-bottomBand = BBandBot(Price, periods, 2);
-bandWidth = topBand - bottomBand;
+upperBand = BBandTop(Price, periods, 2);
+lowerBand = BBandBot(Price, periods, 2);
+avgPrice = MA(Price, periods);
+bandWidth = upperBand - lowerBand;
 
 // Signal
-Buy = Cross( Price, topBand) && (bandWidth * 100.00/bottomBand) <= bbWidth;
-Sell = Cross(Price, MA(Price, periods));
+Buy = Cross( Price, upperBand) && (bandWidth * 100.00/avgPrice) <= bbWidth;
+Sell = Cross(Price, lowerBand + (bandWidth * sellPercent / 100.00));
 
 #include <Footer.afl>
