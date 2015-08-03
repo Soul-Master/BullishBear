@@ -1,0 +1,16 @@
+#include <Header.afl>
+
+// Variables
+range = Optimize("range", 130, 70, 180, 10);
+buySd = Optimize("buy SD", 1.4, 1, 2.1, 0.2);
+sdSize = Optimize("SD size", 0.08, 0.04, 0.12, 0.02);
+ 
+// Calculation
+reg = LinearReg(Price, range);
+sd = StDev(Price, range);
+
+// Signal
+Buy = Cross(Price, reg + buySd * sd) && sd < sdSize * Price;
+Sell = Cross(reg, Price);
+
+#include <Footer.afl>
