@@ -1,0 +1,37 @@
+MaxPrice = Optimize("Max Price", 17,0, 26,1);
+
+if(BarCount > 26) {
+	TestPrice[0] = 0.5;
+	TestPrice[1] = 1;
+	TestPrice[2] = 1.5;
+	TestPrice[3] = 2;
+	TestPrice[4] = 3;
+	TestPrice[5] = 4;
+	TestPrice[6] = 5;
+	TestPrice[7] = 7.5;
+	TestPrice[8] = 10;
+	TestPrice[9] = 15;
+	TestPrice[10] = 20;
+	TestPrice[11] = 25;
+	TestPrice[12] = 37.5;
+	TestPrice[13] = 50;
+	TestPrice[14] = 62.5;
+	TestPrice[15] = 75;
+	TestPrice[16] = 87.5;
+	TestPrice[17] = 100;
+	TestPrice[18] = 125;
+	TestPrice[19] = 150;
+	TestPrice[20] = 175;
+	TestPrice[21] = 200;
+	TestPrice[22] = 250;
+	TestPrice[23] = 300;
+	TestPrice[24] = 350;
+	TestPrice[25] = 400;
+	TestPrice[26] = 9999;
+	
+	IsPriceInRange = Price <= TestPrice[MaxPrice];
+}
+else {
+	IsPriceInRange = False;
+	Exclude = True;
+}
