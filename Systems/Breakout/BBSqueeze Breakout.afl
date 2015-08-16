@@ -1,18 +1,17 @@
 #include <Header.afl>
 
 // Variables
-periods = Optimize("periods", 20, 10, 70, 10);
-bbWidth = Optimize("bbWidth", 10, 4, 15, 1);
-sellPercent = Optimize("sellPercent", 30, 10, 60, 10);
+period = Optimize("period", 20, 10, 120, 10);
+bbWidth = Optimize("bbWidth", 10, 1, 25, 1);
 
 // Calculation
-upperBand = BBandTop(Price, periods, 2);
-lowerBand = BBandBot(Price, periods, 2);
-avgPrice = MA(Price, periods);
+upperBand = BBandTop(Price, period, 2);
+lowerBand = BBandBot(Price, period, 2);
+midBand = MA(Price, period);
 bandWidth = upperBand - lowerBand;
 
 // Signal
-Buy = Price > upperBand && (bandWidth * 100.00/avgPrice) <= bbWidth;
-Sell = Price < lowerBand + (bandWidth * sellPercent / 100.00);
+Buy = Cross(Price, upperBand) && (bandWidth * 100.00/Price) <= bbWidth;
+Sell = Cross(midBand, Price);
 
 #include <Footer.afl>

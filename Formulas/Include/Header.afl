@@ -1,0 +1,7 @@
+SetBacktestMode( backtestRegularRaw );
+
+//PositionSize = Optimize("Position Size", -2, -5, -2, 1);
+PositionSize = -2;
+Price = Close;
+Exclude = Short = Cover = False;
+Buy = Sell = True;

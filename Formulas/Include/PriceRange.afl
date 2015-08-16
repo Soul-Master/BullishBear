@@ -1,4 +1,6 @@
-MaxPrice = Optimize("Max Price", 17,0, 26,1);
+//MinPrice = Optimize("Min Price", 5, 0, 8, 1);
+MaxPrice = Optimize("Max Price", 5, 6, 26, 1);
+//Exclude = Exclude OR MinPrice > MaxPrice;
 
 if(BarCount > 26) {
 	TestPrice[0] = 0.5;
@@ -29,7 +31,8 @@ if(BarCount > 26) {
 	TestPrice[25] = 400;
 	TestPrice[26] = 9999;
 	
-	IsPriceInRange = Price <= TestPrice[MaxPrice];
+	//Buy = Buy && Price >= TestPrice[MinPrice] && Price <= TestPrice[MaxPrice];
+	Buy = Buy && Price <= TestPrice[MaxPrice];
 }
 else {
 	IsPriceInRange = False;

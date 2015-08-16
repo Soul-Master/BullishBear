@@ -1,10 +1,10 @@
 #include <Header.afl>
 
 // Variables
-LowPeriods = Optimize("Low Periods", 20, 10, 300, 10);
+LowPeriods = Optimize("Low Periods", 10, 5, 90, 5);
 
 // Signal
-Buy = Cross(Price, Ref(HHV(Price,99999),-1));
-Sell = Cross(Ref(LLV(Price,LowPeriods),-1), Price);
+Buy = Buy && Cross(Price, Ref(HHV(Price,99999),-1));
+Sell = Sell && Cross(Ref(LLV(Price,LowPeriods),-1), Price);
 
 #include <Footer.afl>

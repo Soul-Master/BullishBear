@@ -1,0 +1,62 @@
+
+if( Status( “action” ) == actionPortfolio )
+{
+    bo = GetBacktesterObject();
+    bo.Backtest( True );
+
+    stAll = bo.GetPerformanceStats( 0 );
+    stLong = bo.GetPerformanceStats( 1 );
+    stShort = bo.GetPerformanceStats( 2 );
+
+    qtyProfitAll = stAll.GetValue( “AllQty” );
+    qtyProfitLong = stLong.GetValue( “AllQty” );
+    qtyProfitShort = stShort.GetValue( “AllQty” );
+
+// e-Ratio
+    avgMAEAll = avgMAELong = avgMAEShort = 0;
+    avgMFEAll = avgMFELong = avgMFEShort = 0;
+    barIndices = BarIndex();
+    dateTimes = DateTime();
+
+    for( trade = bo.GetFirstTrade(); !IsNull( trade ); trade = bo.GetNextTrade() )
+    {
+        arrATR = Foreign( “~ATR_” + trade.Symbol, “Close” );
+        tradeBarIndex = LastValue( ValueWhen( trade.EntryDateTime == dateTimes, barIndices ) );
+        absMAE = trade.EntryPrice * trade.GetMAE() * 0.01;
+        absMFE = trade.EntryPrice * trade.GetMFE() * 0.01;
+        
+        entryATR = arrATR[tradeBarIndex];
+        normMAE = absMAE / entryATR;
+        normMFE = absMFE / entryATR;
+        avgMAEAll += normMAE;
+        avgMFEAll += normMFE;
+
+        if( trade.IsLong() )
+        {
+            avgMAELong += normMAE;
+            avgMFELong += normMFE;
+        }
+        else
+        {
+            avgMAEShort += normMAE;
+            avgMFEShort += normMFE;
+        }
+
+        trade.AddCustomMetric( “MAE( $ )”, absMAE, 2 );
+        trade.AddCustomMetric( “MFE( $ )”, absMFE, 2 );
+        trade.AddCustomMetric( “Entry ATR”, entryATR, 2 );
+    }
+
+    avgMAEAll /= qtyProfitAll;
+    avgMAELong /= qtyProfitLong;
+    avgMAEShort /= qtyProfitShort;
+    avgMFEAll /= qtyProfitAll;
+    avgMFELong /= qtyProfitLong;
+    avgMFEShort /= qtyProfitShort;
+    eRatioAll = avgMFEAll / abs( avgMAEAll );
+    eRatioLong = avgMFELong / abs( avgMAELong );
+    eRatioShort = avgMFEShort / abs( avgMAEShort );
+    bo.AddCustomMetric( “e - Ratio”, eRatioAll, eRatioLong, eRatioShort, 2 );
+
+    bo.ListTrades();
+}

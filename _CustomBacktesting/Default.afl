@@ -1,84 +1,104 @@
-SetCustomBacktestProc("");
+SetCustomBacktestProc( "" );
+
 benchmarkSymbol = "SET";
+BenchmarkPrice = Foreign( benchmarkSymbol, "C" );
+TotalNormalizedExpectancy = 0;
+TotalRelativePerformance = 0;
+TotalNormalizedRelativePerformance = 0;
+
+function normalizedChange( change )
+{
+    return iif( change >= 0, change, -( 100 * ( 100 / ( 100 + change ) ) - 100 ) );
+}
+
+function addProfitStat( trade, endBar )
+{
+    local profitPercent, normalizedProfit, benchmarkStart, benchmarkEnd, benchmarkChangePct, relativePerformance, normalizedRelativePerformance;
+
+    // Get profit %
+    profitPercent = trade.GetPercentProfit();
+    normalizedProfit = normalizedChange( profitPercent );
+    TotalNormalizedExpectancy += normalizedProfit;
+    trade.AddCustomMetric( "Normalized Profit/Loss %", normalizedProfit );
+
+    // Calculate foreign performance
+    benchmarkStart = Lookup( BenchmarkPrice, trade.EntryDateTime, -1 );
+    benchmarkEnd = IIf( endBar > 0, BenchmarkPrice[endBar], Lookup( BenchmarkPrice, trade.ExitDateTime, -1 ) );
+    benchmarkChangePct = ( benchmarkEnd - benchmarkStart ) * 100.0 / benchmarkStart;
+
+    // Calculate relative performance
+    relativePerformance = profitPercent - benchmarkChangePct;
+    TotalRelativePerformance += relativePerformance;
+    trade.AddCustomMetric( "Relative %", relativePerformance );
+
+    // Calculate normalized relative performance
+    normalizedRelativePerformance = normalizedChange( relativePerformance );
+    TotalNormalizedRelativePerformance += normalizedRelativePerformance;
+    trade.AddCustomMetric( "Normalized Relative %", normalizedRelativePerformance );
+}
 
 if( Status( "action" ) == actionPortfolio )
 {
-	bo = GetBacktesterObject();
-	bo.PreProcess();
-	
-	TotalTrade = 0;
-	BenchmarkPrice = Foreign(benchmarkSymbol, "C");
-	
-	for( bar=0; bar < BarCount-1; bar++)
-	{
-		bo.ProcessTradeSignals(bar);
-		
-		for( sig = bo.GetFirstSignal(bar); sig; sig = bo.GetNextSignal(bar) ) 
-		{ 
-			if( sig.IsEntry() ) 
-			{ 
-				TotalTrade++;
-			}
-        }
-	}
-	
+    local totalTrade;
+
+    bo = GetBacktesterObject();
+    bo.PreProcess();
+
+    totalTrade = 0;
+	TotalNormalizedExpectancy = 0;
 	TotalRelativePerformance = 0;
 	TotalNormalizedRelativePerformance = 0;
-	
-	// Iterate through closed trades
-	for( trade = bo.GetFirstTrade(); trade; trade = bo.GetNextTrade() )
-	{		
-		// Calculate foreign performance		
-		BenchmarkStart = Lookup(BenchmarkPrice, trade.EntryDateTime, -1);	
-		BenchmarkEnd = Lookup(BenchmarkPrice, trade.ExitDateTime, -1);	
-		BenchmarkChangePct = (BenchmarkEnd - BenchmarkStart) * 100.0 / BenchmarkStart;
-	
-		// Calculate relative performance
-		RelativePerformance = trade.GetPercentProfit() - BenchmarkChangePct;
-		TotalRelativePerformance += RelativePerformance;
-		trade.AddCustomMetric("Relative %", RelativePerformance);
+
+    for( bar = 0; bar < BarCount - 1; bar++ )
+    {
+        bo.ProcessTradeSignals( bar );
+
+        for( sig = bo.GetFirstSignal( bar ); sig; sig = bo.GetNextSignal( bar ) )
+        {
+            //if( sig.IsEntry() )
+            //{
+            //}
+            // TODO: Force exit all missing bars.
+        }
+    }
+
+    // Iterate through closed trades
+    for( trade = bo.GetFirstTrade(); trade; trade = bo.GetNextTrade() )
+    {
+        addProfitStat( trade, 0 );
+        totalTrade++;
+    }
+
+    // Iterate through open trades
+    for( trade = bo.GetFirstOpenPos(); trade; trade = bo.GetNextOpenPos() )
+    {
+        addProfitStat( trade, BarCount - 1 );
+        totalTrade++;
+    }
+    
+    bo.AddCustomMetric( "Avg. Normalized Expectancy %", TotalNormalizedExpectancy / totalTrade, Null, Null, 2, 4 );
+    bo.AddCustomMetric( "Avg. Relative %", TotalRelativePerformance / totalTrade, Null, Null, 2, 4 );
+    bo.AddCustomMetric( "Avg. Normalized Relative %", TotalNormalizedRelativePerformance / totalTrade, Null, Null, 2, 4 );
+    
+    bo.PostProcess();
+    
+    // get access to Monte Carlo results  
+    mc = bo.GetMonteCarloSim(); 
+
+    if( mc ) 
+    {
+		local car5, car25, mdd75, mdd95;
 		
-		// Calculate normalized relative performance
-		if(RelativePerformance < 0)
-		{
-			NormalizedRelativePerformance = -(100*(100/(100+RelativePerformance))-100);
-			TotalNormalizedRelativePerformance += NormalizedRelativePerformance;
-			trade.AddCustomMetric("Normalized Relative %", NormalizedRelativePerformance);
-		}
-	}
+		car5 = mc.GetValue("CAR", 5);
+		car25 = mc.GetValue("CAR", 25);
+		mdd75 = abs(mc.GetValue("MaxPercDrawdown", 75));
+		mdd95 = abs(mc.GetValue("MaxPercDrawdown", 95));
 		
-	// Iterate through open trades
-	for (trade = bo.GetFirstOpenPos(); trade; trade = bo.GetNextOpenPos())
-	{
-		// Calculate foreign performance		
-		BenchmarkStart = Lookup(BenchmarkPrice, trade.EntryDateTime, -1);	
-		BenchmarkEnd = BenchmarkPrice[BarCount - 1];	
-		BenchmarkChangePct = (BenchmarkEnd - BenchmarkStart) * 100.0 / BenchmarkStart;		
-		
-		// Calculate symbol price
-		SymbolPrice = Foreign(trade.Symbol, "C");
-		ExitPrice = SymbolPrice[BarCount - 1];
-		SymbolChangePct = (ExitPrice - trade.EntryPrice) * 100.0 / trade.EntryPrice;
-		
-		// Calculate relative performance
-		RelativePerformance = SymbolChangePct - BenchmarkChangePct;
-		TotalRelativePerformance += RelativePerformance;
-		trade.AddCustomMetric("Relative %", BenchmarkChangePct);
-		
-		// Calculate normalized relative performance
-		if(RelativePerformance < 0)
-		{
-			NormalizedRelativePerformance = -(100*(100/(100+RelativePerformance))-100);
-			TotalNormalizedRelativePerformance += NormalizedRelativePerformance;
-			trade.AddCustomMetric("Normalized Relative %", NormalizedRelativePerformance);
-		}
-	}
-	
-	AvgRelativePerformance = TotalRelativePerformance / TotalTrade;	
-	bo.AddCustomMetric( "Avg. Relative %", AvgRelativePerformance );
-	
-	AvgNormalizedRelativePerformance = TotalNormalizedRelativePerformance / TotalTrade;	
-	bo.AddCustomMetric( "Avg. Normalized Relative %", AvgNormalizedRelativePerformance );
-	
-	bo.PostProcess();
+		 bo.AddCustomMetric("CAR25", car25, Null, Null, 2, 4); 
+		 bo.AddCustomMetric("CAR5", car5, Null, Null, 2, 4); 
+		 bo.AddCustomMetric("MDD75", mdd75, Null, Null, 2, 4); 
+		 bo.AddCustomMetric("MDD95", mdd95, Null, Null, 2, 4); 
+		 bo.AddCustomMetric("CAR25/MDD75", car25/mdd75, Null, Null, 2, 4); 
+		 bo.AddCustomMetric("CAR5/MDD95", car5/mdd95, Null, Null, 2, 4); 
+    } 
 }

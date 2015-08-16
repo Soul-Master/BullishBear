@@ -1,0 +1,27 @@
+SetOption( "MCEnable", 999);
+SetOption( "MCRuns", 1000 ); 
+SetCustomBacktestProc( "" ); 
+
+if( Status( "action" ) == actionPortfolio ) 
+{ 
+    bo = GetBacktesterObject(); 
+
+    bo.Backtest(); // run default backtest procedure 
+
+    // get access to Monte Carlo results 
+    // note 1: it may be NULL if MC is NOT enabled 
+    // note 2: MC results are available after Backtest() or PostProcess 
+    // as MC simulation is done in final phase of post processing 
+    mc = bo.GetMonteCarloSim(); 
+
+    if( mc ) 
+    { 
+         bo.AddCustomMetric( "MaxPercDrawdown", mc.GetValue( "MaxPercDrawdown", 30 ));
+         // get 30-th percentile of final equity and CAR distribution 
+         bo.AddCustomMetric( "FinalEq30", mc.GetValue( "FinalEquity", 30 ) ); 
+         bo.AddCustomMetric( "CAR30", mc.GetValue( "CAR", 30 ) ); 
+    } 
+    else {
+         bo.AddCustomMetric( "FinalEq30", "N/A");
+	 }
+}

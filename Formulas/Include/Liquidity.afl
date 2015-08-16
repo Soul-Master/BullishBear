@@ -1,0 +1,3 @@
+MinLiquidity = Optimize("Min Liquidity", 10, 0.5, 10, 0.5);
+Liquidity = MA(Close * Volume, 20);
+IsValidLiquidity = Liquidity > MinLiquidity * 1000000;
