@@ -80,6 +80,13 @@ if( Status( "action" ) == actionPortfolio )
     bo.AddCustomMetric( "Avg. Relative %", TotalRelativePerformance / totalTrade, Null, Null, 2, 4 );
     bo.AddCustomMetric( "Avg. Normalized Relative %", TotalNormalizedRelativePerformance / totalTrade, Null, Null, 2, 4 );
     
+    local st, maxDD, ulCerIndex;
+    st = bo.GetPerformanceStats(0); // get stats for all trades 
+    maxDD = abs(st.GetValue("MaxSystemDrawdownPercent"));
+    ulCerIndex = abs(st.GetValue("UlcerIndex"));
+    bo.AddCustomMetric( "Norm. Expectancy %/MDD", TotalNormalizedExpectancy / (maxDD * 1000), Null, Null, 2, 4 );
+    bo.AddCustomMetric( "Norm. Expectancy %/UlcerIndex", TotalNormalizedExpectancy / UlcerIndex, Null, Null, 2, 4 );
+    
     bo.PostProcess();
     
     // get access to Monte Carlo results  

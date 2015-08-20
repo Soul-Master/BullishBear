@@ -1,0 +1,11 @@
+#include <Header.afl>
+
+PeakPercentChange = Optimize("Peak %", 7, 5, 30, 1);
+SupportRange = Optimize("Support Range", 7, 5, 50, 5);
+RecentPeak = Peak(H,PeakPercentChange,1);
+
+// Best case MAR 1.4
+Buy = Buy && Cross(C,ValueWhen(RecentPeak > Ref(RecentPeak,-1),H,1));
+Sell = Sell && Cross(MA(Price, supportRange), Price);
+
+#include <Footer.afl>

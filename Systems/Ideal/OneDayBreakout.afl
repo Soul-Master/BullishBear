@@ -1,0 +1,28 @@
+SetBacktestMode( backtestRegularRaw );
+SetTradeDelays(0,0,0,0);
+
+#include <GetPriceSpread.afl>
+
+Buy = Sell = False;
+Price = Close;
+Exclude = False;
+Optimize("Dammy", 1, 1, 100, 1);
+//#include <PriceRange.afl>
+//port = Foreign("~~~Equity", "C");
+PositionSize = -1;//Optimize("Position Size", -2, -2, -1, 1);
+//Exclude = Exclude OR (PositionSize == -1 && MaxPrice > 15);
+
+//IsEnoughVolume = Volume * Close > port * abs(PositionSize);
+LastHigh = Ref(High, -1);
+LastLow = Ref(Low, -1);
+
+//Buy = IsEnoughVolume && IsPriceInRange && High > LastHigh;
+Buy = High > LastHigh && mtRandomA() > 0.5;
+Sell = Ref(Buy, -1);//Low < LastLow;
+//BuyPrice = IIf(Low > LastHigh, Close, LastHigh + GetPriceSpread(LastHigh));
+BuyPrice = IIf(Low > LastHigh, Close, LastHigh);
+//SellPrice = IIf(High < LastLow, Close, LastLow - GetPriceSpread(LastLow));
+SellPrice = Open;//IIf(High < LastLow, Close, LastLow);
+
+Buy = ExRem(Buy,Sell);
+Sell = ExRem(Sell,Buy);

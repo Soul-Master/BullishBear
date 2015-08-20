@@ -1,0 +1,15 @@
+#include <Header.afl>
+
+// Variables
+period = Optimize("period", 130, 20, 200, 10);
+sdSizePercent = Optimize("SD size", 8, 3, 25, 1);
+ 
+// Calculation
+reg = LinearReg(Price, period);
+sd = StDev(Price, period);
+
+// Signal
+Buy = Buy && Cross(Price, reg + sd) && sd < sdSizePercent * Price/100;
+Sell = Sell && Cross(reg, Price);
+
+#include <Footer.afl>
