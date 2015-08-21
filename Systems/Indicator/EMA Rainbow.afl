@@ -1,0 +1,19 @@
+#include <Header.afl>
+
+// Variables
+LowPeriod = Optimize("Low Period Spead", 7, 5, 60, 5);
+MidPeriodSpead = Optimize("Mid Period Spead", 5, 5, 120, 10);
+HighPeriodSpead = Optimize("High Period Spead", 7, 20, 200, 20);
+
+// Calculation
+MidPeriod = LowPeriod + MidPeriodSpead;
+HighPeriod = MidPeriod + HighPeriodSpead;
+fastEma = EMA(Price, LowPeriod);
+midEma = EMA(Price, MidPeriod);
+slowEma = EMA(Price, HighPeriod);
+
+// Signal
+Buy = Buy && fastEma > midEma && midEma > slowEma;
+Sell = Sell && fastEma < midEma;
+
+#include <Footer.afl>
