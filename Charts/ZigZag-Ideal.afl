@@ -1,32 +1,23 @@
-// ZigZag.afl
-//
-// This AmiBroker program uses the ZigZag function
-// to give perfect buy and sell signals
-// to help analyze the appropriateness of an
-// issue.
-//
-// To use this system,
-// 1. Analysis >> Automatic Analysis
-// 2. Pick >> select ZigZag.afl >> Open
-// 3. Other Settings as desired
-// 4. Back test >> Individual Backtest
-//
+_SECTION_BEGIN("Price");
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", ParamColor("Color", colorDefault ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() ); 
+_SECTION_END();
 
-// Analyze using the Closing price
-PricePoint = C;
+_SECTION_BEGIN("ZIG - Zig");
+P = ParamField( "Price field" );
+change = Param("% change",15,0.1,25,0.1);
+zz = Zig(P,change);
+Plot(zz, _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );
 
-// Set the ZigZag Percentage
-Percentage = 10;
+Cover = Buy = (zz<Ref(zz,-1)) && (zz<Ref(zz,1));
+Short = Sell = (zz>Ref(zz,-1)) && (zz>Ref(zz,1));
+Buy = ExRem(Buy,Sell);
+Sell = ExRem(Sell,Buy);
+Short = ExRem(Short,Cover);
+Cover = ExRem(Cover,Short);
 
-Z = Zig(PricePoint,Percentage);
-
-Buy = Z<=Ref(Z,1) AND Z<=Ref(Z,-1);
-Sell = Z>=Ref(Z,1) AND Z>=Ref(Z,-1);
-Short = Sell;
-Cover = Buy;
-
-Plot(C,"C",colorBlack,styleCandle);
-Plot(Z,"Z",colorRed,styleLine);
 PlotShapes(shapeUpArrow*Buy,colorBrightGreen);
 PlotShapes(shapeDownArrow*Sell,colorRed);
-//Figure 6.13 ZigZag
+
+_SECTION_END();

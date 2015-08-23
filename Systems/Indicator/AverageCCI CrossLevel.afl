@@ -1,0 +1,14 @@
+#include <Header.afl>
+
+// Variables
+BasedRange = Optimize("Based Range", 14, 7, 20, 1);
+Level = Optimize("Level", 10, -50, 200, 10);
+
+// Calculation
+averageMomentum = (CCI(BasedRange) + CCI(BasedRange*1.5) + CCI(BasedRange*2))/3;
+
+// Signal
+Buy = Buy && Cross(averageMomentum, Level);
+Sell = Sell && Cross(Level, averageMomentum);
+
+#include <Footer.afl>

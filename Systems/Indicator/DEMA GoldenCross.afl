@@ -1,0 +1,15 @@
+#include <Header.afl>
+
+// Variables
+LowerRange = Optimize("Lower Range", 5, 5, 120, 5);
+Range = Optimize("Higher Spread", 10, 10, 180, 10);
+
+// Calculation
+fastAverage = DEMA(Price, LowerRange);
+slowAverage = DEMA(Price, LowerRange + Range);
+
+// Signal
+Buy = Buy && Cross(fastAverage, slowAverage);
+Sell = Sell && Cross(slowAverage, fastAverage);
+
+#include <Footer.afl>

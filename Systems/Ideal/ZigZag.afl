@@ -1,21 +1,11 @@
-SetBacktestMode( backtestRegularRaw );
-SetTradeDelays(0,0,0,0);
+#include <Header.afl>
 
-PositionSize = -0.1;
-Price = Close;
-Short = Cover = Buy = Sell = False;
+//Optimize("RandomTest", 1, 1, 1000, 1);
+//accuracy = 0.5;
+//validOrder = 1 - sqrt(accuracy);
+ //&& mtRandomA() > validOrder
+zz = Zig(Price,Optimize("ZigZag%", 15, 5, 25, 1));
+Cover = Buy = (zz<Ref(zz,-1)) && (zz<Ref(zz,1));
+Short = Sell = (zz>Ref(zz,-1)) && (zz>Ref(zz,1));
 
-// Set the ZigZag Percentage
-Percentage = 10;
-
-Z = Zig(Price,Percentage);
-
-Buy = Z < Ref(Z,1) AND Z < Ref(Z,-1);
-Sell = Z > Ref(Z,1) AND Z > Ref(Z,-1);
-Short = Z > Ref(Z,1) AND Z > Ref(Z,-1);
-Cover = Z < Ref(Z,1) AND Z < Ref(Z,-1);
-
-Buy = ExRem(Buy,Sell);
-Sell = ExRem(Sell,Buy);
-Short = ExRem(Short,Cover);
-Cover = ExRem(Cover,Short);
+#include <Footer.afl>
