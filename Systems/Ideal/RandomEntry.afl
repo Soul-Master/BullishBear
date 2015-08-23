@@ -1,0 +1,13 @@
+#include <Header.afl>
+
+// Variables
+TradePerYear = 12;
+Optimize("Random Round", 1, 1, 300, 1);
+HoldingPeriod = Optimize("Holding Period", 20, 10, 200, 10);
+
+// Signal
+Buy = Buy && mtRandomA() <= TradePerYear/250;
+Sell = False;
+ApplyStop( stopTypeNBar, stopModeBars, HoldingPeriod );
+
+#include <Footer.afl>

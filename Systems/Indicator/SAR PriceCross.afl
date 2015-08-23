@@ -1,0 +1,14 @@
+#include <Header.afl>
+
+// Variables
+Accelation = Optimize("Accelation", 0.02, 0.01, 0.2, 0.01);
+MaxAccelation = Optimize("maxAccelation", 10, 2, 20, 1);
+
+// Calculation
+average = SAR(Accelation, Accelation * MaxAccelation);
+
+// Signal
+Buy = Buy && Price > average;
+Sell = Sell && average > Price;
+
+#include <Footer.afl>

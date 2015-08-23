@@ -1,0 +1,13 @@
+#include <Header.afl>
+
+// Variables
+Range = Optimize("Range", 5, 5, 120, 1);
+
+// Calculation
+average = AMA(Price, 2/Range);
+
+// Signal
+Buy = Buy && Cross(Price, average);
+Sell = Sell && Cross(average, Price);
+
+#include <Footer.afl>
