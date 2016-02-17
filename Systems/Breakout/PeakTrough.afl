@@ -1,0 +1,104 @@
+#include <Header.afl>
+
+ChangePercentA = Optimize("Change %", 10, 1, 30, 1);
+
+// Declare variables
+peakA = peakBarA = troughA = troughBarA = pivotA = pivotBarA = candidatePivotA = candidatepivotBarA = 0;
+
+function ShiftArray(arr){
+	// To make it fast, it shifts only first 4 items
+	for(i = 3; i >= 0; i--) {
+		arr[i + 1] = arr[i];
+	}
+	
+	arr[0] = 0;
+	return arr;
+}
+
+// Setup initial value
+pivotA[0] = Close[0];
+pivotBarA[0] = peakA[0] = troughA[0] = 0;
+peakBarA[0] = troughBarA[0] = -1;
+
+for (i = 1; i < BarCount; i++)
+{
+	local lastPivotADiff, candidatePivotADiff;
+
+	lastPivotADiff = (Close[i] - pivotA[0]) * 100.0 / pivotA[0];
+	if (candidatePivotA != 0)
+	{
+		candidatePivotADiff = (Close[i] - candidatePivotA) * 100 / candidatePivotA;
+	}
+	else
+	{
+		candidatePivotADiff = 0;
+	}
+
+	if (lastPivotADiff >= ChangePercentA)
+	{
+		if (troughA[0] - pivotA[0])
+		{
+			troughA = ShiftArray(troughA);
+			troughBarA = ShiftArray(troughBarA);
+			troughA[0] = pivotA[0];
+			troughBarA[0] = pivotBarA[0];
+			candidatePivotA = Close[i];
+			candidatepivotBarA = i;
+		}
+		else if (Close[i] > candidatePivotA)
+		{
+			candidatePivotA = Close[i];
+			candidatepivotBarA = i;
+		}
+	}
+	else if (lastPivotADiff <= -ChangePercentA)
+	{
+		if (peakA[0] != pivotA[0])
+		{
+			peakA = ShiftArray(peakA);
+			peakBarA = ShiftArray(peakBarA);
+			peakA[0] = pivotA[0];
+			peakBarA[0] = pivotBarA[0];
+			candidatePivotA = Close[i];
+			candidatepivotBarA = i;
+		}
+		else if (Close[i] < candidatePivotA)
+		{
+			candidatePivotA = Close[i];
+			candidatepivotBarA = i;
+		}
+	}
+	if (peakBarA[0] > troughBarA[0] && candidatePivotADiff >= ChangePercentA)
+	{
+		troughA = ShiftArray(troughA);
+		troughBarA = ShiftArray(troughBarA);		
+		troughA[0] = candidatePivotA;
+		troughBarA[0] = candidatepivotBarA;
+		pivotA = ShiftArray(pivotA);
+		pivotBarA = ShiftArray(pivotBarA);
+		pivotA[0] = candidatePivotA;
+		pivotBarA[0] = candidatepivotBarA;
+		candidatePivotA = Close[i];
+		candidatepivotBarA = i;
+	}
+	else if (troughBarA[0] > peakBarA[0] && candidatePivotADiff <= -ChangePercentA)
+	{
+		peakA = ShiftArray(peakA);
+		peakBarA = ShiftArray(peakBarA);
+		peakA[0] = candidatePivotA;
+		peakBarA[0] = candidatepivotBarA;
+		pivotA = ShiftArray(pivotA);
+		pivotBarA = ShiftArray(pivotBarA);
+		pivotA[0] = candidatePivotA;
+		pivotBarA[0] = candidatepivotBarA;
+		candidatePivotA = Close[i];
+		candidatepivotBarA = i;
+	}
+	
+	if(peakA[0] != 0 && troughA[0] != 0){
+		Buy[i] = Close[i] > peakA[0];
+		Sell[i] = Close[i] < troughA[0];
+	}
+}
+
+#include <Footer.afl>
