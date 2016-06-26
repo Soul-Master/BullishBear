@@ -1,9 +1,21 @@
-// Set slippage 25%
-BuyPrice = Open + ( High - Open ) / 4;
-SellPrice = Open + ( Open - Low ) / 4;
-
 // Removes excessive signal
-Buy = ExRem(Buy,Sell);
-Sell = ExRem(Sell,Buy);
-Short = ExRem(Short,Cover);
-Cover = ExRem(Cover,Short);
+//Buy = ExRem(Buy,Sell);
+//Sell = ExRem(Sell,Buy);
+
+// Current volume must greater than 100x of position volume
+//RequiredVolume = Eq * PosSize / Close;
+//IsValidVolume = Volume >= RequiredVolume;
+// Volume in pass month should >= required volume for buying. For selling, it required only 1 bar that pass this criteria.//
+
+e = Equity(1); // generate equity without pyramiding effect 
+EntryEq = ValueWhen( Buy, e );
+PcntProfit = 100 * ( e - EntryEq )/EntryEq; 
+InTrade = Flip( Buy, Sell ); 
+PyramidThreshold = 10;//Optimize("Pyramid Threshold", 10, 5, 50, 1);
+
+DoScaleIn = ExRem( InTrade AND PcntProfit > PyramidThreshold, Sell ); 
+DoScaleOut = ExRem( InTrade AND PcntProfit < -10, Sell ); 
+
+// modify rules to handle pyramiding 
+Buy = Buy + sigScaleIn * DoScaleIn + sigScaleOut * DoScaleOut;
+PositionSize = IIf( DoScaleOut, -PosSize, -3*PosSize );

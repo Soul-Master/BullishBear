@@ -1,0 +1,6 @@
+VolRange = Optimize("VolRange", 100, 5, 200, 5);
+VolStdRatio = Optimize("VolStdRatio", 0, -3, 3, 0.5);
+
+volMa = MA(Volume, VolRange);
+volStd = StDev(Volume, VolRange);
+IsEnoughVol = Volume > volMa + volStd * VolStdRatio;

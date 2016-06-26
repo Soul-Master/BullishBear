@@ -1,0 +1,3 @@
+// Set slippage 25%
+BuyPrice = Open + ( High - Open ) / 4;
+SellPrice = Open + ( Open - Low ) / 4;

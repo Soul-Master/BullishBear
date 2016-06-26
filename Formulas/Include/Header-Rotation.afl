@@ -1,0 +1,31 @@
+EnableRotationalTrading();
+SetOption( "MCEnable", 2 ); 
+SetOption( "MCRuns", 1000 ); 
+SetCustomBacktestProc( "" ); 
+
+if( Status( "action" ) == actionPortfolio ) 
+{ 
+    bo = GetBacktesterObject(); 
+
+    bo.Backtest();
+    mc = bo.GetMonteCarloSim(); 
+
+    if( mc ) 
+    { 
+		local car5, car25, mdd75, mdd95;
+
+		car5 = mc.GetValue("CAR", 5);
+		car25 = mc.GetValue("CAR", 25);
+		mdd75 = abs(mc.GetValue("MaxPercDrawdown", 75));
+		mdd95 = abs(mc.GetValue("MaxPercDrawdown", 95));
+
+		bo.AddCustomMetric("CAR25", car25, Null, Null, 2, 4); 
+		bo.AddCustomMetric("CAR5", car5, Null, Null, 2, 4); 
+		bo.AddCustomMetric("MDD75", mdd75, Null, Null, 2, 4); 
+		bo.AddCustomMetric("MDD95", mdd95, Null, Null, 2, 4); 
+		bo.AddCustomMetric("CAR25/MDD75", car25/mdd75, Null, Null, 2, 4); 
+		bo.AddCustomMetric("CAR5/MDD95", car5/mdd95, Null, Null, 2, 4); 
+    } 
+}
+
+Price = Close;

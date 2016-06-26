@@ -1,7 +1,39 @@
-SetBacktestMode( backtestRegularRaw );
+SetCustomBacktestProc( "" );
+SetOption( "MCEnable", 2 );
+SetOption("AllowPositionShrinking", False ); 
 
-//PositionSize = Optimize("Position Size", -2, -5, -2, 1);
-PositionSize = -2;
-Price = Close;
-Exclude = Short = Cover = False;
-Buy = Sell = True;
+if( Status( "action" ) == actionPortfolio )
+{
+    bo = GetBacktesterObject();
+    bo.Backtest();
+    
+    mc = bo.GetMonteCarloSim();
+	stat = bo.GetPerformanceStats(0);
+	local car5, car25, mdd75, mdd95, mar, winningRatio, objective1Score, avgBarsHeld, exposure;
+	
+	mar = stat.GetValue("RAR/MDD");
+	winningRatio = stat.GetValue("WinnersPercent");
+	avgBarsHeld = stat.GetValue("AllAvgBarsHeld");
+	exposure = stat.GetValue("ExposurePercent");
+	objective1Score = mar * winningRatio * (1-exposure/100) / (sqrt(avgBarsHeld));
+	car5 = mc.GetValue( "CAR", 5 );
+	car25 = mc.GetValue( "CAR", 25 );
+	mdd75 = abs( mc.GetValue( "MaxPercDrawdown", 75 ) );
+	mdd95 = abs( mc.GetValue( "MaxPercDrawdown", 95 ) );
+
+	bo.AddCustomMetric( "CAR25", car25, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "CAR5", car5, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "MDD75", mdd75, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "MDD95", mdd95, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "CAR25/MDD75", car25 / mdd75, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "CAR5/MDD95", car5 / mdd95, Null, Null, 2, 4 );
+	bo.AddCustomMetric( "Objective1", objective1Score, Null, Null, 2, 4 );
+}
+
+PosSize = 2;//Optimize("Pos Size", 2, 1, 10, 1);
+Buy = Sell = 0;
+
+// Set slippage 25%
+BuyPrice = Open + ( High - Open ) / 4;
+SellPrice = Open + ( Open - Low ) / 4;
+Eq = Foreign("~~~EQUITY", "C");
